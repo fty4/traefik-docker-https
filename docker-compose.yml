@@ -1,0 +1,33 @@
+version: '3.5'
+
+services:
+  traefik:
+    restart: always
+    image: traefik:1.7
+    container_name: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "127.0.0.1:8080:8080"
+    networks:
+      - gateway 
+    volumes:
+      - ./traefik.toml:/etc/traefik/traefik.toml
+      - ./certs/:/certs/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  myservice:
+    restart: always
+    image: containous/whoami
+    container_name: website
+    expose: 
+      - "80"
+    labels:
+      - "traefik.enable=true" 
+      - "traefik.frontend.rule=Host:myservice.localhost" 
+    networks:
+      - gateway 
+
+networks:
+  gateway:
+#    external: true
